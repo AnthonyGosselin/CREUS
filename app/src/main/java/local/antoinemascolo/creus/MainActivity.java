@@ -79,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
                         String deviceHardwareAddress = device.getAddress(); // MAC address
                         Log.e(TAG, ("Device detected: " + deviceName + " ; " + deviceHardwareAddress));
 
-                        if (deviceName.matches("(.*)ELET_SPP(.*)")){
+                        if (deviceHardwareAddress.matches("(.*)00:1B:10:20:0B:9A(.*)")){
                             mBTDevice = device;
                             Log.e(TAG, "Found ROBUS bluetooth device!");
                             break;
@@ -150,7 +150,7 @@ public class MainActivity extends AppCompatActivity {
             }
             else{
                 Log.e("loadDataFromFile", "File exists");
-             /* boolean deleted = fetchedFile.delete();
+             /*boolean deleted = fetchedFile.delete();
                 Log.e("loadDataFromFile", "File deleted: " + deleted); //*/
             }
 

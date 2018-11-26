@@ -253,7 +253,7 @@ public class BluetoothConnectionService {
 
 
             // Keep listening to the InputStream until an exception occurs
-            while (true) {
+            /*while (true) {
                 // Read from the InputStream
                 try {
                     bytes = mmInStream.read(buffer);
@@ -263,7 +263,7 @@ public class BluetoothConnectionService {
                     Log.e(TAG, "write: Error reading Input Stream. " + e.getMessage() );
                     break;
                 }
-            }
+            }*/
         }
 
         //Call this from the main activity to send data to the remote device

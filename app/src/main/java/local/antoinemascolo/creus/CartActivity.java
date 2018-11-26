@@ -15,6 +15,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 
 public class CartActivity extends AppCompatActivity {
@@ -43,41 +44,42 @@ public class CartActivity extends AppCompatActivity {
 
         pay = (Button) findViewById(R.id.buttonPayer);
         grandTotal = (TextView) findViewById(R.id.grandTotal);
-        grandTotal.setText(String.format("%.2f", MainActivity.myCart.getBalance())+ "$");
+        grandTotal.setText(String.format("%.2f", MainActivity.myCart.getBalance()) + "$");
 
-        pay.setOnClickListener(new View.OnClickListener(){
+        pay.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view)
-            {
+            public void onClick(View view) {
                 Log.e(TAG, "On Clicked");
-                if (MainActivity.currInputStream == null){
+                if (MainActivity.currInputStream == null) {
                     Log.e(TAG, "No input stream for payment!");
-                    Toast.makeText(getApplicationContext(),"Veuillez vous connecter au CREUS",Toast.LENGTH_LONG).show();
-                }
-                else{
-                    Toast.makeText(getApplicationContext(),"Veuillez passez votre carte pour payer",Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(), "Veuillez vous connecter au CREUS", Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(getApplicationContext(), "Veuillez passez votre carte pour payer", Toast.LENGTH_LONG).show();
+                    Log.d(TAG, "Getting ready to read card");
 
-                    //Scan pour carte
-                    Boolean gotCard = false;
-                    int bytes; // bytes returned from read()
-                    byte[] buffer = new byte[1024];  // buffer store for the stream
-                    String incomingMessage;
+                    //Envoie de la commande pour la carte
+                    String strCom = "S";
+                    MainActivity.mBluetoothConnection.write(strCom.getBytes(Charset.forName("UTF-8")));
 
+                    Log.d(TAG, "Sent 'S' ");
+
+                    String confirmationMsg = bluetoothRead();
                     int loop = 0;
-                    while (!gotCard) {
-                        // Read from the InputStream
+                    while (!confirmationMsg.matches("(.*)R(.*)")){
                         loop++;
-                        Log.d("Loop", Integer.toString(loop));
-                        if (loop >= 10000){
-                            Log.e(TAG, "Payment timeout");
-                            break;
-                        }
-                        //try {
+                        confirmationMsg = bluetoothRead();
+                    }
+
+                    if (confirmationMsg.matches("(.*)R(.*)")) {
+                        Log.d(TAG, "CONFIRMATION RECUE");
+                        //Scan pour carte
+                        Boolean gotCard = false;
+
+                        while (!gotCard) {
+                            // Read from the InputStream
                             Log.d(TAG, "Is connected to inputStream");
 
-                           // bytes = MainActivity.currInputStream.read(buffer);
-                            incomingMessage = "C1";//new String(buffer, 0, bytes);
-                            Log.d(TAG, "Card msg received: " + incomingMessage);
+                            String incomingMessage = bluetoothRead();
 
                             if (incomingMessage.matches("(.*)C(.*)")) {
                                 //Commande de compte qui paye
@@ -101,14 +103,29 @@ public class CartActivity extends AppCompatActivity {
                                     //error.start();
                                 }
                             }
-
-                        /*} catch (IOException e) {
-                            Log.e(TAG, "write: Error receiving card. " + e.getMessage());
-                            break;
-                        }*/
+                        }
                     }
                 }
+
             }
         });
+    }
+
+    public String bluetoothRead(){
+        int bytes; // bytes returned from read()
+        byte[] buffer = new byte[1024];  // buffer store for the stream
+        String incomingMessage;
+        Log.d(TAG, "Bluetooth read start");
+
+        try{
+            Log.d(TAG, "hello?");
+            bytes = MainActivity.currInputStream.read(buffer);
+            incomingMessage = new String(buffer, 0, bytes);
+            Log.d(TAG, "Card msg received: " + incomingMessage);
+        } catch (IOException e) {
+            Log.e(TAG, "write: Error receiving card. " + e.getMessage());
+            incomingMessage = "Error";
+        }
+        return incomingMessage;
     }
 }

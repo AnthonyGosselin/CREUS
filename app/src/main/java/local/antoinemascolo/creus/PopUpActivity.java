@@ -63,8 +63,7 @@ public class PopUpActivity extends Activity {
             @Override
             public void onClick(View view)
             {
-                connection = true;
-                if(connection){
+                if(MainActivity.currInputStream == null){
                     MainActivity.mBluetoothConnection.write(Integer.toString(MainActivity.allItems.get(nom).getItemPlace()).getBytes(Charset.forName("UTF-8")));
                     Toast.makeText(getApplicationContext(),"Veuillez suivre le CREUS!",Toast.LENGTH_LONG).show();
                     sound.start();
